@@ -1,25 +1,69 @@
-import logo from './logo.svg';
-import './App.css';
+import React, { useEffect, useRef, useState } from "react";
 
-function App() {
+const API_URL = "https://official-joke-api.appspot.com/random_joke";
+
+// Keep every visible string here so it can be matched to the design images in one place.
+const TEXT = {
+  title: "Random Joke Generator",
+  button: "Get a Joke",
+  fetching: "Fetching...",
+  empty: "Click the button to get a joke!",
+  error: "Failed to fetch joke. Please try again.",
+};
+
+export default function App() {
+  const [joke, setJoke] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(false);
+  const mounted = useRef(true);
+
+  useEffect(() => {
+    mounted.current = true;
+    return () => {
+      mounted.current = false;
+    };
+  }, []);
+
+  const fetchJoke = async () => {
+    if (loading) return;
+    setLoading(true);
+    setError(false);
+    try {
+      const res = await fetch(API_URL);
+      if (!res.ok) throw new Error(`Request failed (${res.status})`);
+      const data = await res.json();
+      if (!data || !data.setup || !data.punchline) throw new Error("Unexpected response");
+      if (mounted.current) setJoke({ setup: data.setup, punchline: data.punchline });
+    } catch {
+      if (mounted.current) {
+        setJoke(null);
+        setError(true);
+      }
+    } finally {
+      if (mounted.current) setLoading(false);
+    }
+  };
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <main className="app">
+      <h1>{TEXT.title}</h1>
+
+      <div className="card" aria-live="polite">
+        {error ? (
+          <p className="error">{TEXT.error}</p>
+        ) : joke ? (
+          <>
+            <p className="setup">{joke.setup}</p>
+            <p className="punchline">{joke.punchline}</p>
+          </>
+        ) : (
+          <p className="empty">{TEXT.empty}</p>
+        )}
+      </div>
+
+      <button type="button" className="btn" onClick={fetchJoke} disabled={loading}>
+        {loading ? TEXT.fetching : TEXT.button}
+      </button>
+    </main>
   );
 }
-
-export default App;
