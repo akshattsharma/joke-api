@@ -5,10 +5,11 @@ const API_URL = "https://official-joke-api.appspot.com/random_joke";
 // Keep every visible string here so it can be matched to the design images in one place.
 const TEXT = {
   title: "Random Joke Generator",
-  button: "Get a Joke",
+  button: "Fetch joke",
   fetching: "Fetching...",
-  empty: "Click the button to get a joke!",
-  error: "Failed to fetch joke. Please try again.",
+  retry: "Try again",
+  empty: "Click the button to fetch a fresh one.",
+  error: "Could not fetch a joke. Try again.",
 };
 
 export default function App() {
@@ -62,7 +63,7 @@ export default function App() {
       </div>
 
       <button type="button" className="btn" onClick={fetchJoke} disabled={loading}>
-        {loading ? TEXT.fetching : TEXT.button}
+        {loading ? TEXT.fetching : error ? TEXT.retry : TEXT.button}
       </button>
     </main>
   );
